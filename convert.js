@@ -3,17 +3,40 @@ const im = require('imagemagick');
 const convert = promisify(im.convert);
 const rm = promisify(require('rimraf'));
 
-const text = "Hello world!!";
+async function createGif(o) {
+  // create the text overlay
+  await convert([
+    "-size", `${o.width}x100`,
+    "xc:transparent",
+    "-font", "Arial",
+    "-pointsize", o.fontSize,
+    "-fill", "black",
+    "-stroke", "white",
+    "-strokewidth", o.strokeWidth,
+    "-gravity", "center",
+    "-draw", `text 0,0 '${o.text}'`,
+    o.tmpTextOverlay
+  ]);
 
-const bgGif = "giphy.gif";
-const outputFile = "output.gif";
-const tmpTextOverlay = "overlay.png";
+  // create gif composite (output)
+  await convert([
+    o.bgGif,
+    'null:',
+    '-gravity', 'north',
+    o.tmpTextOverlay,
+    '-layers', 'composite', o.outputFile
+  ]);
 
-const fontSize = 72;
-const strokeWidth = 2;
+  // remove the text overlay
+  await rm(o.tmpTextOverlay);
+}
 
-(async function () {
-  await convert(["-size", "400x100", "xc:transparent", "-font", "Arial", "-pointsize", fontSize, "-fill", "black", "-stroke", "white", "-strokewidth", strokeWidth, "-gravity", "center", "-draw", `text 0,0 '${text}'`, tmpTextOverlay]);
-  await convert([bgGif, 'null:', '-gravity', 'north', tmpTextOverlay, '-layers', 'composite', outputFile]);
-  await rm(tmpTextOverlay);
-})();
+createGif({
+  text: "Hello world!!",
+  bgGif: "giphy.gif",
+  outputFile: "output.gif",
+  tmpTextOverlay: "overlay.png",
+  fontSize: 72,
+  strokeWidth: 2,
+  width: 400,
+}).catch(console.error);
