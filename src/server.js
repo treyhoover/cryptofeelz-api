@@ -8,6 +8,8 @@ const { createGif } = require('./convert');
 const giphy = require("./giphy");
 const app = express();
 
+const resolveTmp = (p) => path.join(__dirname, "..", "tmp", p);
+
 const daysLabelMap = {
   "1": "24 hours",
   "7": "week",
@@ -48,9 +50,9 @@ app.get('/gif', async (req, res) => {
   const gifs = gifResponse.data.map(gif => gif.images.downsized_medium.gif_url);
   const gif = _.sample(gifs);
 
-  const downloaded = await download.image({
+  await download.image({
     url: gif,
-    dest: path.join(__dirname, "input.gif")
+    dest: path.join(resolveTmp("input.gif")),
   });
 
   const upOrDown = percentChange >= 0 ? "up" : "down";
@@ -60,16 +62,16 @@ app.get('/gif', async (req, res) => {
 
   await createGif({
     text: `When ${symbol} is ${upOrDown} <span foreground="${color}" font_weight="bold">${percentRounded}%</span> in the past ${pastTime}...`,
-    src: "input.gif",
-    outputFile: "output.gif",
-    tmpTextOverlay: "overlay.png",
+    src: resolveTmp("input.gif"),
+    outputFile: resolveTmp("output.gif"),
+    tmpTextOverlay: resolveTmp("overlay.png"),
     fontSize: 72,
     strokeWidth: 2,
   }).catch(console.error);
 
   // res.json({ prevPrice, currentPrice, percentChange, gif });
 
-  res.sendFile(path.join(__dirname, "output.gif"))
+  res.sendFile(resolveTmp("output.gif"))
 });
 
 app.listen(3000, () => {
