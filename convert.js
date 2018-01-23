@@ -6,7 +6,7 @@ const rm = promisify(require('rimraf'));
 
 const NEW_LINE_HACK = `\u200A\n`;
 
-async function createGif(o) {
+exports.createGif = async function(o) {
   // get image size
   const { width } = await sizeOf(o.src);
 
@@ -38,19 +38,4 @@ async function createGif(o) {
 
   // remove the text overlay
   await rm(o.tmpTextOverlay);
-}
-
-const symbol = "BTC";
-const percentChange = 10;
-const time = "24 hours";
-const upOrDown = percentChange >= 0 ? "up" : "down";
-const color = upOrDown === "up" ? "green" : "red";
-
-createGif({
-  text: `When ${symbol} is ${upOrDown} <span foreground="${color}" font_weight="bold">${percentChange}%</span> in the past ${time}...`,
-  src: "input.gif",
-  outputFile: "output.gif",
-  tmpTextOverlay: "overlay.png",
-  fontSize: 72,
-  strokeWidth: 2,
-}).catch(console.error);
+};
