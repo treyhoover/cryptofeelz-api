@@ -1,12 +1,16 @@
 const { promisify } = require('util');
 const im = require('imagemagick');
 const convert = promisify(im.convert);
+const sizeOf = promisify(require('image-size'));
 const rm = promisify(require('rimraf'));
 
 async function createGif(o) {
+  // get image size
+  const { width, height } = await sizeOf(o.src);
+
   // create the text overlay
   await convert([
-    "-size", `${o.width}x100`,
+    "-size", `${width}x${height}`,
     "xc:transparent",
     "-font", "Arial",
     "-pointsize", o.fontSize,
@@ -20,7 +24,7 @@ async function createGif(o) {
 
   // create gif composite (output)
   await convert([
-    o.bgGif,
+    o.src,
     'null:',
     '-gravity', 'north',
     o.tmpTextOverlay,
@@ -33,10 +37,9 @@ async function createGif(o) {
 
 createGif({
   text: "Hello world!!",
-  bgGif: "giphy.gif",
+  src: "input.gif",
   outputFile: "output.gif",
   tmpTextOverlay: "overlay.png",
   fontSize: 72,
   strokeWidth: 2,
-  width: 400,
 }).catch(console.error);
