@@ -4,39 +4,50 @@ const convert = promisify(im.convert);
 const sizeOf = promisify(require('image-size'));
 const rm = promisify(require('rimraf'));
 
+const NEW_LINE_HACK = `\u200A\n`;
+
 async function createGif(o) {
   // get image size
-  const { width, height } = await sizeOf(o.src);
+  const { width } = await sizeOf(o.src);
 
   // create the text overlay
   await convert([
-    "-size", `${width}x${height}`,
-    "xc:transparent",
+    "-size", `${width}x`,
+    "-background", "black",
     "-font", "Arial",
-    "-pointsize", o.fontSize,
-    "-fill", "black",
-    "-stroke", "white",
-    "-strokewidth", o.strokeWidth,
+    "-pointsize", "16",
+    "-fill", "white",
     "-gravity", "center",
-    "-draw", `text 0,0 '${o.text}'`,
-    o.tmpTextOverlay
+    `pango:${NEW_LINE_HACK + o.text + NEW_LINE_HACK}`,
+    o.tmpTextOverlay,
   ]);
+
+  const { height: captionHeight } = await sizeOf(o.tmpTextOverlay);
 
   // create gif composite (output)
   await convert([
     o.src,
     'null:',
+    "-splice", `0x${captionHeight}`,
     '-gravity', 'north',
     o.tmpTextOverlay,
-    '-layers', 'composite', o.outputFile
+    '-layers', 'composite',
+
+    o.outputFile
   ]);
 
   // remove the text overlay
   await rm(o.tmpTextOverlay);
 }
 
+const symbol = "BTC";
+const percentChange = 10;
+const time = "24 hours";
+const upOrDown = percentChange >= 0 ? "up" : "down";
+const color = upOrDown === "up" ? "green" : "red";
+
 createGif({
-  text: "Hello world!!",
+  text: `When ${symbol} is ${upOrDown} <span foreground="${color}" font_weight="bold">${percentChange}%</span> in the past ${time}...`,
   src: "input.gif",
   outputFile: "output.gif",
   tmpTextOverlay: "overlay.png",
