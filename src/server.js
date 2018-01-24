@@ -11,6 +11,8 @@ const client = require("redis").createClient('6379', 'redis');
 const getAsync = promisify(client.get).bind(client);
 const app = express();
 
+const PRICE_EXPIRATION = 15 * 60; // 15 minutes
+
 const resolveTmp = (p) => path.resolve("/", "tmp", p);
 
 const daysLabelMap = {
@@ -20,39 +22,45 @@ const daysLabelMap = {
   "365": "year",
 };
 
-const fetchCoin = (options) => axios.get('https://min-api.cryptocompare.com/data/pricehistorical', options);
+const fetchCoin = async ({ ts, symbol = "BTC" }) => {
+  const currentPriceKey = `${symbol}_PRICE_CURRENT`;
+  const isCurrentPriceReq = !ts;
+
+  // check redis first (historical requests only)
+  if (isCurrentPriceReq) {
+    const cachedPrice = await getAsync(currentPriceKey);
+
+    if (cachedPrice) return Promise.resolve(cachedPrice);
+  }
+
+  return axios.get('https://min-api.cryptocompare.com/data/pricehistorical', {
+    params: {
+      ts,
+      fsym: symbol,
+      tsyms: "USD",
+    },
+  }).then(res => {
+    const price = res.data[symbol.toUpperCase()]["USD"];
+
+    if (isCurrentPriceReq) {
+      client.set(currentPriceKey, price, 'EX', PRICE_EXPIRATION);
+    }
+
+    return price;
+  });
+};
 
 app.get('/gif', async (req, res) => {
-  client.set("foo", "bar");
-
-  const foo = await getAsync('foo');
-
-  res.send(foo);
-
   try {
     const { symbol = "BTC", days = "1" } = req.query;
     const date = new Date();
     date.setDate(date.getDate() - days);
-    const time = Date.parse(date.toDateString()) / 1000;
+    const ts = Date.parse(date.toDateString()) / 1000;
 
-    const fetchHistorical = fetchCoin({
-      params: {
-        fsym: symbol,
-        tsyms: "USD",
-        ts: time,
-      }
-    });
+    const fetchHistorical = fetchCoin({ symbol, ts });
+    const fetchCurrent = fetchCoin({ symbol });
 
-    const fetchCurrent = fetchCoin({
-      params: {
-        fsym: symbol,
-        tsyms: "USD",
-      }
-    });
-
-    const [prev, current] = await Promise.all([fetchHistorical, fetchCurrent]);
-    const prevPrice = prev.data[symbol.toUpperCase()]["USD"];
-    const currentPrice = current.data[symbol.toUpperCase()]["USD"];
+    const [prevPrice, currentPrice] = await Promise.all([fetchHistorical, fetchCurrent]);
     const percentChange = (currentPrice / prevPrice - 1) * 100;
     const q = percentToEmotion(percentChange);
 
