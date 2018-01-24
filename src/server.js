@@ -1,3 +1,4 @@
+const { promisify } = require('util');
 const path = require('path');
 const download = require('image-downloader');
 const _ = require('lodash');
@@ -6,6 +7,8 @@ const axios = require('axios');
 const { percentToEmotion } = require('./utils/emotions');
 const { createGif } = require('./convert');
 const giphy = require("./giphy");
+const client = require("redis").createClient('6379', 'redis');
+const getAsync = promisify(client.get).bind(client);
 const app = express();
 
 const resolveTmp = (p) => path.resolve("/", "tmp", p);
@@ -20,6 +23,12 @@ const daysLabelMap = {
 const fetchCoin = (options) => axios.get('https://min-api.cryptocompare.com/data/pricehistorical', options);
 
 app.get('/gif', async (req, res) => {
+  client.set("foo", "bar");
+
+  const foo = await getAsync('foo');
+
+  res.send(foo);
+
   try {
     const { symbol = "BTC", days = "1" } = req.query;
     const date = new Date();
