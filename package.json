@@ -1,6 +1,9 @@
 {
   "scripts": {
-    "start": "nodemon ./src/server.js"
+    "start": "nodemon ./src/server.js",
+    "docker:build": "docker build . -t treyhoover/cryptofeelz:latest",
+    "docker:start": "docker run -p 3000:3000 -d --name cryptofeelz treyhoover/cryptofeelz:latest",
+    "docker:stop": "docker stop cryptofeelz && docker rm cryptofeelz"
   },
   "dependencies": {
     "axios": "^0.17.1",

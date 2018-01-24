@@ -8,7 +8,7 @@ const { createGif } = require('./convert');
 const giphy = require("./giphy");
 const app = express();
 
-const resolveTmp = (p) => path.join(__dirname, "..", "tmp", p);
+const resolveTmp = (p) => path.resolve("/", "tmp", p);
 
 const daysLabelMap = {
   "1": "24 hours",
@@ -20,58 +20,60 @@ const daysLabelMap = {
 const fetchCoin = (options) => axios.get('https://min-api.cryptocompare.com/data/pricehistorical', options);
 
 app.get('/gif', async (req, res) => {
-  const { symbol = "BTC", days = "1" } = req.query;
-  const date = new Date();
-  date.setDate(date.getDate() - days);
-  const time = Date.parse(date.toDateString()) / 1000;
+  try {
+    const { symbol = "BTC", days = "1" } = req.query;
+    const date = new Date();
+    date.setDate(date.getDate() - days);
+    const time = Date.parse(date.toDateString()) / 1000;
 
-  const fetchHistorical = fetchCoin({
-    params: {
-      fsym: symbol,
-      tsyms: "USD",
-      ts: time,
-    }
-  });
+    const fetchHistorical = fetchCoin({
+      params: {
+        fsym: symbol,
+        tsyms: "USD",
+        ts: time,
+      }
+    });
 
-  const fetchCurrent = fetchCoin({
-    params: {
-      fsym: symbol,
-      tsyms: "USD",
-    }
-  });
+    const fetchCurrent = fetchCoin({
+      params: {
+        fsym: symbol,
+        tsyms: "USD",
+      }
+    });
 
-  const [prev, current] = await Promise.all([fetchHistorical, fetchCurrent]);
-  const prevPrice = prev.data[symbol.toUpperCase()]["USD"];
-  const currentPrice = current.data[symbol.toUpperCase()]["USD"];
-  const percentChange = (currentPrice / prevPrice - 1) * 100;
-  const q = percentToEmotion(percentChange);
+    const [prev, current] = await Promise.all([fetchHistorical, fetchCurrent]);
+    const prevPrice = prev.data[symbol.toUpperCase()]["USD"];
+    const currentPrice = current.data[symbol.toUpperCase()]["USD"];
+    const percentChange = (currentPrice / prevPrice - 1) * 100;
+    const q = percentToEmotion(percentChange);
 
-  const gifResponse = await giphy.search('gifs', { q });
-  const gifs = gifResponse.data.map(gif => gif.images.downsized_medium.gif_url);
-  const gif = _.sample(gifs);
+    const gifResponse = await giphy.search('gifs', { q });
+    const gifs = gifResponse.data.map(gif => gif.images.downsized_medium.gif_url);
+    const gif = _.sample(gifs);
 
-  await download.image({
-    url: gif,
-    dest: path.join(resolveTmp("input.gif")),
-  });
+    await download.image({
+      url: gif,
+      dest: path.join(resolveTmp("input.gif")),
+    });
 
-  const upOrDown = percentChange >= 0 ? "up" : "down";
-  const color = upOrDown === "up" ? "green" : "red";
-  const percentRounded = Math.abs(Math.floor(percentChange)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  const pastTime = daysLabelMap[days];
+    const upOrDown = percentChange >= 0 ? "up" : "down";
+    const color = upOrDown === "up" ? "green" : "red";
+    const percentRounded = Math.abs(Math.floor(percentChange)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    const pastTime = daysLabelMap[days];
 
-  await createGif({
-    text: `When ${symbol} is ${upOrDown} <span foreground="${color}" font_weight="bold">${percentRounded}%</span> in the past ${pastTime}...`,
-    src: resolveTmp("input.gif"),
-    outputFile: resolveTmp("output.gif"),
-    tmpTextOverlay: resolveTmp("overlay.png"),
-    fontSize: 72,
-    strokeWidth: 2,
-  }).catch(console.error);
+    await createGif({
+      text: `When ${symbol} is ${upOrDown} <span foreground="${color}" font_weight="bold">${percentRounded}%</span> in the past ${pastTime}...`,
+      src: resolveTmp("input.gif"),
+      outputFile: resolveTmp("output.gif"),
+      tmpTextOverlay: resolveTmp("overlay.png"),
+      fontSize: 72,
+      strokeWidth: 2,
+    });
 
-  // res.json({ prevPrice, currentPrice, percentChange, gif });
-
-  res.sendFile(resolveTmp("output.gif"))
+    res.sendFile(resolveTmp("output.gif"))
+  } catch (e) {
+    console.error(e);
+  }
 });
 
 app.listen(3000, () => {
