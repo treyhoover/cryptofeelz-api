@@ -61,7 +61,10 @@ COPY yarn.lock ./
 RUN yarn
 
 # Bundle app source
-COPY . .
+COPY ./src ./src
+COPY ./scripts ./scripts
+COPY ./package.json ./package.json
+COPY ./yarn.lock ./yarn.lock
 
 EXPOSE 3000
 

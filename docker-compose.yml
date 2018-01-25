@@ -6,7 +6,13 @@ services:
       - GIF_ROOT=./gifs
       - REDIS_HOST=redis
     build: .
+    volumes:
+      - type: volume
+        source: ./gifs
+        target: ./gifs
     ports:
      - "3000:3000"
   redis:
     image: "redis:alpine"
+volumes:
+  gifs:
