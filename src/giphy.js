@@ -44,13 +44,16 @@ const downloadGif = async (bucket, gif) => {
 
 const fetchGifs = async (q) => giphy.search('gifs', { q }).then(res => res.data);
 
+const fetchNewGif = async (emotion) => {
+  const gifs = await fetchGifs(emotion);
+  const gif = _.sample(gifs);
+
+  return await downloadGif(emotion, gif);
+};
+
 // Find a random gif from the local gif bucket
 const fetchGifForEmotion = async (emotion) => {
   const dir = resolveGifDir(emotion);
-  // const gifs = await fetchGifs(emotion);
-  // const gif = _.sample(gifs);
-
-  // return await downloadGif(emotion, gif);
 
   const cachedGifs = await readDir(dir);
   const fileName = _.sample(cachedGifs);
@@ -65,4 +68,5 @@ module.exports = {
   resolveGif,
   downloadGif,
   fetchGifs,
+  fetchNewGif,
 };

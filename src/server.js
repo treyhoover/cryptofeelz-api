@@ -4,7 +4,7 @@ const express = require('express');
 const axios = require('axios');
 const { percentToEmotion } = require('./utils/emotions');
 const { createGif } = require('./convert');
-const { fetchGifForEmotion } = require("./giphy");
+const { fetchNewGif } = require("./giphy");
 const redis = require("redis");
 const app = express();
 
@@ -75,6 +75,10 @@ const PRICE_EXPIRATION = 15 * 60; // 15 minutes
     });
   };
 
+  app.get('/status', async (req, res) => {
+    res.json({ healthy: true });
+  });
+
   app.get('/gif', async (req, res) => {
     try {
       const { symbol = "BTC", days = "1" } = req.query;
@@ -89,7 +93,7 @@ const PRICE_EXPIRATION = 15 * 60; // 15 minutes
       const percentChange = (currentPrice / prevPrice - 1) * 100;
       const q = percentToEmotion(percentChange);
 
-      const gifPath = await fetchGifForEmotion(q);
+      const gifPath = await fetchNewGif(q);
 
       const upOrDown = percentChange >= 0 ? "up" : "down";
       const color = upOrDown === "up" ? "green" : "red";
