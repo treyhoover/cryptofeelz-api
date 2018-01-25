@@ -1,6 +1,8 @@
 {
   "scripts": {
-    "start": "nodemon ./src/server.js"
+    "start": "nodemon ./src/server.js",
+    "docker:build": "docker-compose build",
+    "docker:push": "$(aws ecr get-login --no-include-email) && docker push 453875408421.dkr.ecr.us-east-1.amazonaws.com/cryptofeelz"
   },
   "dependencies": {
     "axios": "^0.17.1",

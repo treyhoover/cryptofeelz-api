@@ -1,6 +1,7 @@
 version: '3.2'
 services:
   web:
+    image: "453875408421.dkr.ecr.us-east-1.amazonaws.com/cryptofeelz"
     environment:
       - GIF_ROOT=/gifs
       - REDIS_HOST=redis
