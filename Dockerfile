@@ -1,6 +1,7 @@
 # vim:set ft=dockerfile:
 FROM node:9
 
+ENV GIF_ROOT = "/gifs"
 ENV MAGICK_URL "http://imagemagick.org/download/releases"
 ENV MAGICK_VERSION 6.9.1-10
 

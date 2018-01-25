@@ -6,10 +6,14 @@ const path = require("path");
 const GphApiClient = require("giphy-js-sdk-core");
 const download = require('image-downloader');
 
+const DEFAULT_GIF_ROOT = path.join(process.cwd(), "gifs");
+
+const { GIF_ROOT = DEFAULT_GIF_ROOT } = process.env;
+
 const API_KEY = "CHOO0Uw2ELi7jXsVIUednM1DpBGHByHh";
 const giphy = GphApiClient(API_KEY);
 
-const resolveGifDir = bucket => path.resolve("/", "gifs", bucket);
+const resolveGifDir = bucket => path.resolve(GIF_ROOT, bucket);
 
 const resolveGif = (bucket, id) => {
   const targetDir = resolveGifDir(bucket);
@@ -18,30 +22,35 @@ const resolveGif = (bucket, id) => {
 };
 
 const downloadGif = async (bucket, gif) => {
+  const targetDir = resolveGifDir(bucket);
   const gifPath = resolveGif(bucket, gif.id);
   const url = gif.images.downsized_medium.gif_url;
 
+  // ensure the output directory exists for the gif before we download it
+  await mkdirp(targetDir);
+
   if (!fs.existsSync(gifPath)) {
+    console.log("downloading gif", gifPath);
+
     await download.image({
       url,
       dest: gifPath,
     });
+  } else {
+    console.log("using gif from cache", gifPath);
   }
 
   return gifPath;
 };
 
+const fetchGifs = async (q) => giphy.search('gifs', { q }).then(res => res.data);
+
 // Fetches, downloads and returns the gif path on the server
 const fetchGifForEmotion = async (emotion) => {
   // console.log("fetching gif for", emotion);
-  const targetDir = resolveGifDir(emotion);
 
-  // ensure the output directory exists for the gif before we download it
-  await mkdirp(targetDir);
-
-  const response = await giphy.search('gifs', { q: emotion });
-
-  const gif = _.sample(response.data);
+  const gifs = await fetchGifs(emotion);
+  const gif = _.sample(gifs);
 
   return await downloadGif(emotion, gif);
 };
@@ -49,4 +58,8 @@ const fetchGifForEmotion = async (emotion) => {
 module.exports = {
   default: giphy,
   fetchGifForEmotion,
+  resolveGifDir,
+  resolveGif,
+  downloadGif,
+  fetchGifs,
 };

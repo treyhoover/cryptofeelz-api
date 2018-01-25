@@ -1,4 +1,4 @@
-const { sample } = require("lodash");
+const { sample, flatten } = require("lodash");
 
 const percentEmotionMap = {
   "-25": ["broke", "fml", "screaming"],
@@ -14,6 +14,8 @@ const percentBuckets = Object.keys(percentEmotionMap)
   .map(Number)
   .filter(x => x >= 0) // ignore sign for buckets
   .sort((a, b) => b - a); // reverse so we can find the largest bucket (without going over)
+
+exports.emotions = flatten(Object.values(percentEmotionMap));
 
 exports.percentToEmotion = p => {
   const absChange = Math.abs(p);
