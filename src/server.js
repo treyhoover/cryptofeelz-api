@@ -6,7 +6,7 @@ const express = require('express');
 const axios = require('axios');
 const { percentToEmotion } = require('./utils/emotions');
 const { createGif } = require('./convert');
-const giphy = require("./giphy");
+const { fetchGifForEmotion } = require("./giphy");
 const client = require("redis").createClient('6379', 'redis');
 const getAsync = promisify(client.get).bind(client);
 const app = express();
@@ -64,7 +64,7 @@ app.get('/gif', async (req, res) => {
     const percentChange = (currentPrice / prevPrice - 1) * 100;
     const q = percentToEmotion(percentChange);
 
-    const gifResponse = await giphy.search('gifs', { q });
+    const gifResponse = await fetchGifForEmotion(q);
     const gifs = gifResponse.data.map(gif => gif.images.downsized_medium.gif_url);
     const gif = _.sample(gifs);
 
