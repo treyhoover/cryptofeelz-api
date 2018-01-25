@@ -5,11 +5,18 @@ const axios = require('axios');
 const { percentToEmotion } = require('./utils/emotions');
 const { createGif } = require('./convert');
 const { fetchGifForEmotion } = require("./giphy");
-const client = require("redis").createClient('6379', 'redis');
-const getAsync = promisify(client.get).bind(client);
+const redis = require("redis");
 const app = express();
 
+const { REDIS_HOST = "127.0.0.1", REDIS_PORT = 6379 } = process.env;
 const PRICE_EXPIRATION = 15 * 60; // 15 minutes
+
+const client = redis.createClient({
+  host: REDIS_HOST,
+  port: REDIS_PORT,
+});
+
+const getAsync = promisify(client.get).bind(client);
 
 const resolveTmp = (p) => path.resolve("/", "tmp", p);
 

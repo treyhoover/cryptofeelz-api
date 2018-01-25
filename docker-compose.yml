@@ -3,6 +3,7 @@ services:
   web:
     environment:
       - GIF_ROOT=/gifs
+      - REDIS_HOST=redis
     build: .
     volumes:
       - type: volume
