@@ -3,16 +3,10 @@ services:
   web:
     image: "453875408421.dkr.ecr.us-east-1.amazonaws.com/cryptofeelz"
     environment:
-      - GIF_ROOT=/gifs
+      - GIF_ROOT=./gifs
       - REDIS_HOST=redis
     build: .
-    volumes:
-      - type: volume
-        source: ./gifs
-        target: /gifs
     ports:
      - "3000:3000"
   redis:
     image: "redis:alpine"
-volumes:
-  gifs:
