@@ -1,7 +1,5 @@
 const { promisify } = require('util');
 const path = require('path');
-const download = require('image-downloader');
-const _ = require('lodash');
 const express = require('express');
 const axios = require('axios');
 const { percentToEmotion } = require('./utils/emotions');
@@ -64,14 +62,7 @@ app.get('/gif', async (req, res) => {
     const percentChange = (currentPrice / prevPrice - 1) * 100;
     const q = percentToEmotion(percentChange);
 
-    const gifResponse = await fetchGifForEmotion(q);
-    const gifs = gifResponse.data.map(gif => gif.images.downsized_medium.gif_url);
-    const gif = _.sample(gifs);
-
-    await download.image({
-      url: gif,
-      dest: path.join(resolveTmp("input.gif")),
-    });
+    const gifPath = await fetchGifForEmotion(q);
 
     const upOrDown = percentChange >= 0 ? "up" : "down";
     const color = upOrDown === "up" ? "green" : "red";
@@ -80,7 +71,7 @@ app.get('/gif', async (req, res) => {
 
     await createGif({
       text: `When ${symbol} is ${upOrDown} <span foreground="${color}" font_weight="bold">${percentRounded}%</span> in the past ${pastTime}...`,
-      src: resolveTmp("input.gif"),
+      src: gifPath,
       outputFile: resolveTmp("output.gif"),
       tmpTextOverlay: resolveTmp("overlay.png"),
       fontSize: 72,
