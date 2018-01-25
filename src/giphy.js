@@ -2,6 +2,7 @@ const _ = require('lodash');
 const { promisify } = require('util');
 const fs = require("fs");
 const mkdirp = promisify(require("mkdirp"));
+const readDir = promisify(fs.readdir);
 const path = require("path");
 const GphApiClient = require("giphy-js-sdk-core");
 const download = require('image-downloader');
@@ -30,8 +31,6 @@ const downloadGif = async (bucket, gif) => {
   await mkdirp(targetDir);
 
   if (!fs.existsSync(gifPath)) {
-    console.log("downloading gif", gifPath);
-
     await download.image({
       url,
       dest: gifPath,
@@ -45,14 +44,18 @@ const downloadGif = async (bucket, gif) => {
 
 const fetchGifs = async (q) => giphy.search('gifs', { q }).then(res => res.data);
 
-// Fetches, downloads and returns the gif path on the server
+// Find a random gif from the local gif bucket
 const fetchGifForEmotion = async (emotion) => {
-  // console.log("fetching gif for", emotion);
+  const dir = resolveGifDir(emotion);
+  // const gifs = await fetchGifs(emotion);
+  // const gif = _.sample(gifs);
 
-  const gifs = await fetchGifs(emotion);
-  const gif = _.sample(gifs);
+  // return await downloadGif(emotion, gif);
 
-  return await downloadGif(emotion, gif);
+  const cachedGifs = await readDir(dir);
+  const fileName = _.sample(cachedGifs);
+
+  return path.resolve(GIF_ROOT, emotion, fileName);
 };
 
 module.exports = {

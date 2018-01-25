@@ -32,7 +32,6 @@ exports.createGif = async function(o) {
     '-gravity', 'north',
     o.tmpTextOverlay,
     '-layers', 'composite',
-
     o.outputFile
   ]);
 
