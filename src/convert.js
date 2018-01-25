@@ -27,11 +27,13 @@ exports.createGif = async function(o) {
   // create gif composite (output)
   await convert([
     o.src,
+    "-coalesce",
     'null:',
     "-splice", `0x${captionHeight}`,
     '-gravity', 'north',
     o.tmpTextOverlay,
     '-layers', 'composite',
+    '-layers', 'Optimize',
     o.outputFile
   ]);
 
