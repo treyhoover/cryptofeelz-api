@@ -5,13 +5,14 @@ services:
     environment:
       - GIF_ROOT=/usr/app/gifs
       - REDIS_HOST=redis
+      - PORT=80
     build: .
     volumes:
       - type: volume
         source: ./gifs
         target: /usr/app/gifs
     ports:
-     - "3000:3000"
+     - "3000:80"
   redis:
     image: "redis:alpine"
 volumes:

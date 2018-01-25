@@ -8,7 +8,7 @@ const { fetchNewGif } = require("./giphy");
 const redis = require("redis");
 const app = express();
 
-const { REDIS_HOST = "127.0.0.1", REDIS_PORT = 6379 } = process.env;
+const { REDIS_HOST = "127.0.0.1", REDIS_PORT = 6379, PORT = 3000 } = process.env;
 const PRICE_EXPIRATION = 15 * 60; // 15 minutes
 
 (async () => {
@@ -115,7 +115,7 @@ const PRICE_EXPIRATION = 15 * 60; // 15 minutes
     }
   });
 
-  app.listen(3000, () => {
-    console.log('App listening on port 3000!')
+  app.listen(PORT, () => {
+    console.log(`App listening on port ${PORT}!`)
   });
 })();
