@@ -1,8 +1,16 @@
-version: '3'
+version: '3.2'
 services:
   web:
     build: .
+    volumes:
+      - type: volume
+        source: gifs
+        target: /gifs
+        volume:
+          nocopy: true
     ports:
      - "3000:3000"
   redis:
     image: "redis:alpine"
+volumes:
+  gifs:
