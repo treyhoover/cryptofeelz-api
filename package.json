@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "start": "nodemon ./src/server.js",
+    "start": "node ./src/server.js",
+    "watch": "nodemon ./src/server.js",
     "docker:build": "docker-compose build",
     "docker:push": "$(aws ecr get-login --no-include-email) && docker push 453875408421.dkr.ecr.us-east-1.amazonaws.com/cryptofeelz"
   },
