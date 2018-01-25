@@ -4,10 +4,8 @@ services:
     build: .
     volumes:
       - type: volume
-        source: gifs
+        source: ./gifs
         target: /gifs
-        volume:
-          nocopy: true
     ports:
      - "3000:3000"
   redis:

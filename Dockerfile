@@ -64,6 +64,5 @@ RUN yarn
 COPY . .
 
 EXPOSE 3000
-VOLUME ["/gifs"]
 
 CMD [ "yarn", "start" ]
