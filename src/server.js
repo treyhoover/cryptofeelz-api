@@ -2,11 +2,14 @@ const { promisify } = require('util');
 const path = require('path');
 const express = require('express');
 const axios = require('axios');
+const cors = require('cors');
 const { percentToEmotion } = require('./utils/emotions');
 const { createGif } = require('./convert');
 const { fetchNewGif } = require("./giphy");
 const redis = require("redis");
 const app = express();
+
+app.use(cors());
 
 const { REDIS_HOST = "127.0.0.1", REDIS_PORT = 6379, PORT = 3000 } = process.env;
 const PRICE_EXPIRATION = 15 * 60; // 15 minutes

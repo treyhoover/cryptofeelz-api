@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "axios": "^0.17.1",
+    "cors": "^2.8.4",
     "express": "^4.16.2",
     "giphy-js-sdk-core": "^1.0.3",
     "image-downloader": "^3.3.0",
