@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const { promisify } = require('util');
 const path = require('path');
 const express = require('express');
