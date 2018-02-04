@@ -3,21 +3,24 @@ const { STRING } = require("sequelize");
 const sequelize = require("../db");
 const cache = require("../cache");
 
-const PRICE_EXPIRATION = 15 * 60; // 15 minutes
+const Coin = sequelize.define('coin', {
+  symbol: {
+    type: STRING,
+    primaryKey: true,
+  },
+});
 
-const fetchCoin = async ({ ts, symbol = "BTC" }) => {
-  const currentPriceKey = `${symbol}_PRICE_CURRENT`;
-  const isCurrentPriceReq = !ts;
+Coin.getPrice = async function ({ symbol, date }) {
+  const ts = Date.parse(date.toDateString()) / 1000;
+  const priceKey = `${symbol}_${ts}`;
 
   // check redis first (historical requests only)
-  if (isCurrentPriceReq) {
-    const cachedPrice = await cache.get(currentPriceKey);
+  const cachedPrice = await cache.get(priceKey);
 
-    if (cachedPrice) {
-      console.log(`Fetched ${symbol} price from cache`, cachedPrice);
+  if (cachedPrice) {
+    console.log(`Fetched ${symbol} price from cache`, cachedPrice);
 
-      return Promise.resolve(Number(cachedPrice));
-    }
+    return Number(cachedPrice);
   }
 
   return axios.get('https://min-api.cryptocompare.com/data/pricehistorical', {
@@ -29,25 +32,18 @@ const fetchCoin = async ({ ts, symbol = "BTC" }) => {
   }).then(res => {
     const price = res.data[symbol.toUpperCase()]["USD"];
 
-    if (isCurrentPriceReq) {
-      cache.set(currentPriceKey, price, 'EX', PRICE_EXPIRATION);
+    if (!cachedPrice) {
+      cache.set(priceKey, price);
     }
 
     return price;
   });
 };
 
-const Coin = sequelize.define('coin', {
-  symbol: {
-    type: STRING,
-    primaryKey: true,
-  },
-});
-
-Coin.prototype.getPrice =  async function(ts) {
+Coin.prototype.getPrice = async function (ts) {
   const { symbol } = this;
 
-  return await fetchCoin({ ts, symbol });
+  return await Coin.getPrice({ ts, symbol });
 };
 
 Coin.sync();

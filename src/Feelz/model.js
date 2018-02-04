@@ -6,9 +6,28 @@ const GphApiClient = require("giphy-js-sdk-core");
 const { GIPHY_API_KEY } = require("../../config/env");
 const giphy = GphApiClient(GIPHY_API_KEY);
 
-const fetchGifs = async (q) => {
+const cache = require("../cache");
 
-  return giphy.search('gifs', { q }).then(res => res.data);
+const GIF_EXPIRATION = 60 * 60; // 60 minutes
+
+const fetchGifs = async (q) => {
+  const key = `GIFS_${q}`.toUpperCase();
+
+  const cached = await cache.get(key);
+
+  if (cached) {
+    console.log("using cached result", key);
+
+    return JSON.parse(cached);
+  } else {
+    const gifs = await giphy.search('gifs', { q }).then(res => res.data);
+
+    console.log("caching gif results", key);
+
+    cache.set(key, JSON.stringify(gifs), 'EX', GIF_EXPIRATION);
+
+    return gifs;
+  }
 };
 
 const fetchGif = async (emotion) => {

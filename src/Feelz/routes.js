@@ -1,7 +1,17 @@
-const _ = require("lodash");
+const moment = require("moment");
 const Feelz = require("./model");
 const Coin = require("../Coin/model");
 const { percentToEmotion } = require('../utils/emotions');
+const { createRounder } = require("../utils/date");
+
+const roundDate = createRounder(5); // round dates to 5 minutes
+
+const getDateRange = (days = 0) => {
+  const endDate = roundDate();
+  const startDate = moment(endDate).subtract(days, "days").toDate();
+
+  return { startDate, endDate };
+};
 
 module.exports = (app) => {
   // SHOW
@@ -10,14 +20,10 @@ module.exports = (app) => {
       const { symbol = "BTC", days: _days = "1" } = req.query;
       const days = Number(_days);
 
-      const date = new Date();
-      date.setDate(date.getDate() - days);
-      const ts = Date.parse(date.toDateString()) / 1000;
+      const { startDate, endDate } = getDateRange(Number(days));
 
-      const coin = await Coin.findById(symbol);
-
-      const fetchHistorical = coin.getPrice(ts);
-      const fetchCurrent = coin.getPrice();
+      const fetchHistorical = Coin.getPrice({ symbol, date: startDate });
+      const fetchCurrent = Coin.getPrice({ symbol, date: endDate });
 
       const [prevPrice, currentPrice] = await Promise.all([fetchHistorical, fetchCurrent]);
       const percent = Math.round((currentPrice / prevPrice - 1) * 100);
@@ -30,6 +36,7 @@ module.exports = (app) => {
         percent,
         emotion,
         gif,
+        createdAt: new Date(),
       });
     } catch (e) {
       console.error(e);
