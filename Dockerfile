@@ -10,8 +10,8 @@ COPY yarn.lock ./
 RUN yarn
 
 # Bundle app source
-#COPY ./src ./src
-#COPY ./scripts ./scripts
+COPY ./src ./src
+COPY ./scripts ./scripts
 COPY ./.env ./.env
 COPY ./config ./config
 COPY ./package.json ./package.json
