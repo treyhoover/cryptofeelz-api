@@ -1,4 +1,5 @@
 const { STRING, INTEGER } = require("sequelize");
+const shortid = require('shortid');
 const _ = require('lodash');
 const GphApiClient = require("giphy-js-sdk-core");
 const sequelize = require("../db");
@@ -36,6 +37,11 @@ const fetchGif = async (emotion) => {
 };
 
 const Feelz = sequelize.define('feelz', {
+  id: {
+    type: STRING,
+    primaryKey: true,
+    defaultValue: shortid.generate,
+  },
   symbol: STRING,
   days: INTEGER,
   percent: INTEGER,
