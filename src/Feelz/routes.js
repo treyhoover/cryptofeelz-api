@@ -1,4 +1,5 @@
 const moment = require("moment");
+const pluralize = require("pluralize");
 const Feelz = require("./model");
 const Coin = require("../Coin/model");
 const { percentToEmotion } = require('../utils/emotions');
@@ -30,12 +31,18 @@ module.exports = (app) => {
       const emotion = percentToEmotion(percent);
       const gif = await Feelz.fetchGif(emotion);
 
+      const upOrDown = percent >= 0 ? "up" : "down";
+      const amt = Math.abs(percent);
+      const time = days === 1 ? "day" : `${days} ${pluralize("days", days)}`;
+      const caption = `When ${symbol} is ${upOrDown} ${amt}% in the past ${time}`;
+
       res.json({
         symbol,
         days,
         percent,
         emotion,
         gif,
+        caption,
         createdAt: new Date(),
       });
     } catch (e) {
