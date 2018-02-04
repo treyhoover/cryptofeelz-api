@@ -54,6 +54,8 @@ module.exports = (app) => {
           percent,
           emotion,
           gif: gif.id,
+          width: gif.images.fixed_height.width,
+          height: gif.images.fixed_height.height,
           caption,
         }
       });

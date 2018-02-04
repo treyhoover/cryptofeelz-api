@@ -48,6 +48,8 @@ const Feelz = sequelize.define('feelz', {
   emotion: STRING,
   gif: STRING,
   caption: STRING,
+  width: INTEGER,
+  height: INTEGER,
 }, {
   tableName: 'feelz',
   getterMethods: {
@@ -56,7 +58,13 @@ const Feelz = sequelize.define('feelz', {
       const slug = _.kebabCase(caption.replace(/[^A-z0-9_-]/gi, ' '));
 
       return `http://cryptofeelz.com/feelz/${id}/${slug}`;
-    }
+    },
+
+    aspect() {
+      const { width, height } = this;
+
+      return width / height;
+    },
   }
 });
 
