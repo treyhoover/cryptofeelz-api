@@ -1,14 +1,13 @@
 const { STRING, INTEGER } = require("sequelize");
-const sequelize = require("../db");
-
 const _ = require('lodash');
 const GphApiClient = require("giphy-js-sdk-core");
+const sequelize = require("../db");
 const { GIPHY_API_KEY } = require("../../config/env");
-const giphy = GphApiClient(GIPHY_API_KEY);
-
 const cache = require("../cache");
 
 const GIF_EXPIRATION = 60 * 60; // 60 minutes
+
+const giphy = GphApiClient(GIPHY_API_KEY);
 
 const fetchGifs = async (q) => {
   const key = `GIFS_${q}`.toUpperCase();
@@ -41,6 +40,18 @@ const Feelz = sequelize.define('feelz', {
   days: INTEGER,
   percent: INTEGER,
   emotion: STRING,
+  gif: STRING,
+  caption: STRING,
+}, {
+  tableName: 'feelz',
+  getterMethods: {
+    permalink() {
+      const { id, caption } = this;
+      const slug = _.kebabCase(caption.replace(/[^A-z0-9_-]/gi, ' '));
+
+      return `http://cryptofeelz.com/feelz/${id}/${slug}`;
+    }
+  }
 });
 
 Feelz.sync();

@@ -8,10 +8,9 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // register modules
-require("./Permalink")(app);
 require("./Status")(app);
 require("./Coin")(app);
-require("./Feelz")(app);
+require("./Feel")(app);
 
 (async () => {
   app.listen(PORT, () => {
