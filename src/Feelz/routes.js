@@ -1,4 +1,5 @@
 const _ = require("lodash");
+const Feelz = require("./model");
 const Coin = require("../Coin/model");
 const { percentToEmotion } = require('../utils/emotions');
 
@@ -21,12 +22,14 @@ module.exports = (app) => {
       const [prevPrice, currentPrice] = await Promise.all([fetchHistorical, fetchCurrent]);
       const percent = Math.round((currentPrice / prevPrice - 1) * 100);
       const emotion = percentToEmotion(percent);
+      const gif = await Feelz.fetchGif(emotion);
 
       res.json({
         symbol,
         days,
         percent,
         emotion,
+        gif,
       });
     } catch (e) {
       console.error(e);

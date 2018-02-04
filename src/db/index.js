@@ -1,12 +1,12 @@
 const Sequelize = require('sequelize');
 
 const {
-  RDS_HOSTNAME = "localhost",
-  RDS_PORT = "5432",
-  RDS_DB_NAME = "cryptofeelz_dev",
-  RDS_USERNAME = "user",
-  RDS_PASSWORD = null,
-} = process.env;
+  RDS_HOSTNAME,
+  RDS_PORT,
+  RDS_DB_NAME,
+  RDS_USERNAME,
+  RDS_PASSWORD,
+} = require("../../config/env");
 
 console.log("Connecting to db", RDS_HOSTNAME, RDS_PORT);
 

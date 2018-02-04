@@ -2,8 +2,8 @@ const { promisify } = require('util');
 const redis = require("redis");
 
 const {
-  REDIS_HOST = "127.0.0.1",
-  REDIS_PORT = 6379
+  REDIS_HOST,
+  REDIS_PORT,
 } = process.env;
 
 const cache = redis.createClient({

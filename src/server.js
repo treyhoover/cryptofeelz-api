@@ -1,5 +1,4 @@
-require('dotenv').config();
-
+const { PORT } = require("../config/env");
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -7,8 +6,6 @@ const app = express();
 
 app.use(cors());
 app.use(bodyParser.json());
-
-const { PORT = 3000 } = process.env;
 
 // register modules
 require("./Permalink")(app);
