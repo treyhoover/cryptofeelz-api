@@ -28,7 +28,13 @@ module.exports = (app) => {
       const fetchCurrent = Coin.getPrice({ symbol, date: endDate });
 
       const [prevPrice, currentPrice] = await Promise.all([fetchHistorical, fetchCurrent]);
-      const percent = Math.round((currentPrice / prevPrice - 1) * 100);
+
+      let percent = Math.round((currentPrice / prevPrice - 1) * 100);
+
+      if (!Number.isInteger(percent)) {
+        percent = 0;
+      }
+
       const emotion = percentToEmotion(percent);
       const gif = await Feel.fetchGif(emotion);
 
