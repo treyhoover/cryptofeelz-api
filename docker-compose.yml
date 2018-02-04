@@ -2,18 +2,22 @@ version: '3.2'
 services:
   web:
     image: "453875408421.dkr.ecr.us-east-1.amazonaws.com/cryptofeelz"
-    environment:
-      - GIF_ROOT=/usr/app/gifs
-      - REDIS_HOST=redis
-      - PORT=80
     build: .
     volumes:
       - type: volume
         source: ./gifs
         target: /usr/app/gifs
+      - type: bind
+        source: ./src
+        target: /usr/app/src
+      - type: bind
+        source: ./scripts
+        target: /usr/app/scripts
     ports:
      - "3000:80"
   redis:
     image: "redis:alpine"
 volumes:
   gifs:
+  src:
+  scripts:

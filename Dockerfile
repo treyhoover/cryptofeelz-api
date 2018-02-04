@@ -61,8 +61,9 @@ COPY yarn.lock ./
 RUN yarn
 
 # Bundle app source
-COPY ./src ./src
-COPY ./scripts ./scripts
+#COPY ./src ./src
+#COPY ./scripts ./scripts
+COPY ./.env ./.env
 COPY ./package.json ./package.json
 COPY ./yarn.lock ./yarn.lock
 
