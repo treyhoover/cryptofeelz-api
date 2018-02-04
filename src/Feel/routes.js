@@ -56,6 +56,7 @@ module.exports = (app) => {
           gif: gif.id,
           width: gif.images.fixed_height.width,
           height: gif.images.fixed_height.height,
+          numFrames: gif.images.original.frames,
           caption,
         }
       });

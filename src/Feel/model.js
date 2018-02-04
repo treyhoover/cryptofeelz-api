@@ -50,6 +50,7 @@ const Feelz = sequelize.define('feelz', {
   caption: STRING,
   width: INTEGER,
   height: INTEGER,
+  numFrames: INTEGER,
 }, {
   tableName: 'feelz',
   getterMethods: {

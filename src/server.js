@@ -11,6 +11,7 @@ app.use(bodyParser.json());
 require("./Status")(app);
 require("./Coin")(app);
 require("./Feel")(app);
+require("./Gif")(app);
 
 (async () => {
   app.listen(PORT, () => {
