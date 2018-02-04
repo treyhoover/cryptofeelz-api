@@ -1,5 +1,9 @@
+const _ = require("lodash");
+const path = require('path');
+const request = require('request');
 const moment = require("moment");
 const pluralize = require("pluralize");
+const gm = require('gm');
 const Feel = require("./model");
 const Coin = require("../Coin/model");
 const { percentToEmotion } = require('../utils/emotions');
@@ -65,11 +69,46 @@ module.exports = (app) => {
   });
 
   // SHOW (permalinks)
-  app.get('/feelz/:id/:slug?', async (req, res) => {
-    const { id, slug } = req.params;
+  app.get('/feelz/:id/:slug?\.:ext?', async (req, res) => {
+    const { id, slug, ext } = req.params;
 
     const feel = await Feel.findById(id);
 
-    res.json(feel);
+    if (ext !== "gif") return res.json(feel);
+
+    const url = `https://media1.giphy.com/media/${feel.gif}/200.gif`;
+
+    res.set('Content-Type', 'image/gif');
+
+    const fontSize = 24;
+    const wordsPerLine = 20;
+
+    const words = feel.caption.split(" ");
+    let caption = "";
+    let count = 0;
+    let lineCount = 0;
+
+    for (let word of words) {
+      count += word.length;
+
+      if (lineCount + word.length >= wordsPerLine) {
+        caption += "\n";
+        lineCount = 0;
+      } else {
+        lineCount += word.length;
+      }
+
+      caption += word + " ";
+    }
+
+    caption = caption.trim();
+
+    gm(request(url))
+      .font(path.resolve(process.cwd(), 'src', 'fonts', 'impact.ttf'), fontSize)
+      .stroke("#000000", 1)
+      .fill("#ffffff")
+      .drawText(0, fontSize, caption, 'North')
+      .stream()
+      .pipe(res);
   });
 };
