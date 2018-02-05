@@ -1,4 +1,6 @@
 const { STRING, INTEGER } = require("sequelize");
+const pluralize = require("pluralize");
+const format = require('../utils/format');
 const shortid = require('shortid');
 const _ = require('lodash');
 const GphApiClient = require("giphy-js-sdk-core");
@@ -66,6 +68,17 @@ const Feelz = sequelize.define('feelz', {
 
       return width / height;
     },
+
+    captionHtml() {
+      const { percent, days, symbol } = this;
+
+      const upOrDown = percent >= 0 ? "up" : "down";
+      const amt = format.asPercent(Math.abs(percent));
+      const time = days === 1 ? "day" : `${days} ${pluralize("days", days)}`;
+      const color = upOrDown === "up" ? "green" : "red";
+
+      return `When ${symbol} is ${upOrDown} <span foreground="${color}">${amt}</span> in the past ${time}`;
+    }
   }
 });
 

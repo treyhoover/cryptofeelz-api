@@ -1,14 +1,13 @@
-const _ = require("lodash");
-const path = require('path');
-const request = require('request');
+const fs = require("fs");
 const moment = require("moment");
 const pluralize = require("pluralize");
-const gm = require('gm');
+const download = require('image-downloader');
 const Feel = require("./model");
 const Coin = require("../Coin/model");
 const { percentToEmotion } = require('../utils/emotions');
 const format = require('../utils/format');
 const { createRounder } = require("../utils/date");
+const { createGif } = require("../utils/gif");
 
 const roundDate = createRounder(5); // round dates to 5 minutes
 
@@ -71,47 +70,44 @@ module.exports = (app) => {
     }
   });
 
-  // SHOW (permalinks)
-  app.get('/feelz/:id/:slug?\.:ext?', async (req, res) => {
-    const { id, slug, ext } = req.params;
+  // SHOW
+  app.get('/feelz/:id\.:ext?', async (req, res) => {
+    try {
+      const { id, ext } = req.params;
 
-    const feel = await Feel.findById(id);
+      const feel = await Feel.findById(id);
 
-    if (ext !== "gif") return res.json(feel);
+      if (!feel) return res.status(404).end();
 
-    const url = `https://media1.giphy.com/media/${feel.gif}/200.gif`;
+      if (ext === "gif") {
+        const inputFilePath = `/tmp/${feel.id}.gif`;
+        const captionFilePath = `/tmp/${feel.caption}.png`;
+        const outputFilePath = `/tmp/${feel.id}_output.gif`;
 
-    res.set('Content-Type', 'image/gif');
+        if (!fs.existsSync(inputFilePath)) {
+          await download.image({
+            url: `https://media1.giphy.com/media/${feel.gif}/200.gif`,
+            dest: inputFilePath,
+          });
+        }
 
-    const fontSize = 24;
-    const wordsPerLine = 20;
+        if (!fs.existsSync(outputFilePath)) {
+          await(createGif({
+            src: inputFilePath,
+            text: feel.captionHtml,
+            tmpTextOverlay: captionFilePath,
+            outputFile: outputFilePath,
+          }));
+        }
 
-    const words = feel.caption.split(" ");
-    let caption = "";
-    let count = 0;
-    let lineCount = 0;
-
-    for (let word of words) {
-      count += word.length;
-
-      if (lineCount + word.length >= wordsPerLine) {
-        caption += "\n";
-        lineCount = 0;
+        res.sendFile(outputFilePath);
       } else {
-        lineCount += word.length;
+        res.json(feel);
       }
-
-      caption += word + " ";
+    } catch (e) {
+      res.json({
+        error: e.message,
+      });
     }
-
-    caption = caption.trim();
-
-    gm(request(url))
-      .font(path.resolve(process.cwd(), 'src', 'fonts', 'impact.ttf'), fontSize)
-      .stroke("#000000", 1)
-      .fill("#ffffff")
-      .drawText(0, fontSize, caption, 'North')
-      .stream()
-      .pipe(res);
   });
 };
