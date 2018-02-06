@@ -58,7 +58,8 @@ const Feelz = sequelize.define('feelz', {
   getterMethods: {
     permalink() {
       const { id, caption } = this;
-      const slug = _.kebabCase(caption.replace(/[^A-z0-9_-]/gi, ' '));
+      const captionPercent = caption.replace(/(\d+)%/, '$1 percent');
+      const slug = _.kebabCase(captionPercent.replace(/[^A-z0-9_-]/gi, ' '));
 
       return `http://cryptofeelz.com/feelz/${id}/${slug}`;
     },
