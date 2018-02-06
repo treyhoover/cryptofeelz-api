@@ -28,6 +28,7 @@ Coin.getPrice = async function ({ symbol, date }) {
       ts,
       fsym: symbol,
       tsyms: "USD",
+      e: "Coinbase",
     },
   }).then(res => {
     const price = res.data[symbol.toUpperCase()]["USD"];
