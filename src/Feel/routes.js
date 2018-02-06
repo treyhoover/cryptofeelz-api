@@ -1,13 +1,11 @@
-const fs = require("fs");
 const moment = require("moment");
 const pluralize = require("pluralize");
-const download = require('image-downloader');
 const Feel = require("./model");
 const Coin = require("../Coin/model");
 const { percentToEmotion } = require('../utils/emotions');
 const format = require('../utils/format');
 const { createRounder } = require("../utils/date");
-const { createGif } = require("../utils/gif");
+const { feel2Gif } = require("../utils/gif");
 
 const roundDate = createRounder(5); // round dates to 5 minutes
 
@@ -60,6 +58,9 @@ module.exports = (app) => {
         }
       });
 
+      // proactively create the gif automatically
+      feel2Gif(feel).catch(console.error);
+
       res.json(feel);
     } catch (e) {
       console.error(e);
@@ -80,25 +81,7 @@ module.exports = (app) => {
       if (!feel) return res.status(404).end();
 
       if (ext === "gif") {
-        const inputFilePath = `/tmp/${feel.id}.gif`;
-        const captionFilePath = `/tmp/${feel.caption}.png`;
-        const outputFilePath = `/tmp/${feel.id}_output.gif`;
-
-        if (!fs.existsSync(inputFilePath)) {
-          await download.image({
-            url: `https://media1.giphy.com/media/${feel.gif}/200.gif`,
-            dest: inputFilePath,
-          });
-        }
-
-        if (!fs.existsSync(outputFilePath)) {
-          await(createGif({
-            src: inputFilePath,
-            text: feel.captionHtml,
-            tmpTextOverlay: captionFilePath,
-            outputFile: outputFilePath,
-          }));
-        }
+        const outputFilePath = await feel2Gif(feel);
 
         res.sendFile(outputFilePath);
       } else {
