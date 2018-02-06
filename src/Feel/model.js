@@ -69,7 +69,7 @@ const Feelz = sequelize.define('feelz', {
       return width / height;
     },
 
-    captionHtml() {
+    captionMarkup() {
       const { percent, days, symbol } = this;
 
       const upOrDown = percent >= 0 ? "up" : "down";

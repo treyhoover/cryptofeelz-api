@@ -57,7 +57,7 @@ const feel2Gif = async (feel) => {
   if (!fs.existsSync(outputFilePath)) {
     await(createGif({
       src: inputFilePath,
-      text: feel.captionHtml,
+      text: feel.captionMarkup,
       tmpTextOverlay: captionFilePath,
       outputFile: outputFilePath,
     }));
