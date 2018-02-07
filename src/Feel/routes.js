@@ -59,7 +59,7 @@ module.exports = (app) => {
       });
 
       // proactively create the gif automatically
-      feel2Gif(feel).catch(console.error);
+      // feel2Gif(feel).catch(console.error);
 
       res.json(feel);
     } catch (e) {
