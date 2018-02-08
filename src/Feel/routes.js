@@ -32,9 +32,11 @@ module.exports = (app) => {
 
       let percent = Math.round((currentPrice / prevPrice - 1) * 100);
 
-      if (!Number.isInteger(percent)) {
+      if (!Number.isInteger(percent) || percent === -0) {
         percent = 0;
       }
+
+      console.log("percent", percent);
 
       const emotion = percentToEmotion(percent);
       const gif = await Feel.fetchGif(emotion);
