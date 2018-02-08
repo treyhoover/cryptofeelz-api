@@ -5,7 +5,7 @@ const Coin = require("../Coin/model");
 const { percentToEmotion } = require('../utils/emotions');
 const format = require('../utils/format');
 const { createRounder } = require("../utils/date");
-const { feel2Gif } = require("../utils/gif");
+// const { feel2Gif } = require("../utils/gif");
 
 const roundDate = createRounder(5); // round dates to 5 minutes
 
@@ -80,13 +80,13 @@ module.exports = (app) => {
 
       if (!feel) return res.status(404).end();
 
-      if (ext === "gif") {
-        const outputFilePath = await feel2Gif(feel);
+      // if (ext === "gif") {
+        // const outputFilePath = await feel2Gif(feel);
 
-        res.sendFile(outputFilePath);
-      } else {
+        // res.sendFile(outputFilePath);
+      // } else {
         res.json(feel);
-      }
+      // }
     } catch (e) {
       res.json({
         error: e.message,

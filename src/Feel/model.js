@@ -70,7 +70,7 @@ const Feelz = sequelize.define('feelz', {
       return width / height;
     },
 
-    captionMarkup() {
+    captionHtml() {
       const { percent, days, symbol } = this;
 
       const upOrDown = percent >= 0 ? "up" : "down";
@@ -78,7 +78,7 @@ const Feelz = sequelize.define('feelz', {
       const time = days === 1 ? "day" : `${days} ${pluralize("days", days)}`;
       const color = upOrDown === "up" ? "green" : "red";
 
-      return `When ${symbol} is ${upOrDown} <span foreground="${color}">${amt}</span> in the past ${time}`;
+      return `When ${symbol} is ${upOrDown} <span class="${color}">${amt}</span> in the past ${time}`;
     }
   }
 });

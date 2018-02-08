@@ -18,7 +18,7 @@ Coin.getPrice = async function ({ symbol, date }) {
   const cachedPrice = await cache.get(priceKey);
 
   if (cachedPrice) {
-    console.log(`Fetched ${symbol} price from cache`, cachedPrice);
+    console.log(`Fetched ${priceKey} from cache`, cachedPrice);
 
     return Number(cachedPrice);
   }
