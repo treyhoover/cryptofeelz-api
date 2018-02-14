@@ -3,6 +3,8 @@ const { STRING } = require("sequelize");
 const sequelize = require("../db");
 const cache = require("../cache");
 
+const PRICE_CACHE = 5 * 60 * 60; // 5 minutes
+
 const Coin = sequelize.define('coin', {
   symbol: {
     type: STRING,
@@ -10,41 +12,30 @@ const Coin = sequelize.define('coin', {
   },
 });
 
-Coin.getPrice = async function ({ symbol, date }) {
-  const ts = Date.parse(date.toDateString()) / 1000;
-  const priceKey = `${symbol}_${ts}`;
+Coin.getPriceChange = async function ({ symbol, duration }) {
+  const SYM = symbol.toUpperCase();
 
-  // check redis first (historical requests only)
-  const cachedPrice = await cache.get(priceKey);
+  const cacheKey = `${symbol}_${duration}`;
 
-  if (cachedPrice) {
-    console.log(`Fetched ${priceKey} from cache`, cachedPrice);
+  const percentage = await cache.get(cacheKey);
 
-    return Number(cachedPrice);
-  }
+  if (percentage) {
+    console.log(`Fetched ${cacheKey} from cache`, percentage);
 
-  return axios.get('https://min-api.cryptocompare.com/data/pricehistorical', {
-    params: {
-      ts,
-      fsym: symbol,
-      tsyms: "USD",
-      e: "Coinbase",
-    },
-  }).then(res => {
-    const price = res.data[symbol.toUpperCase()]["USD"];
+    return [Number(percentage), null];
+  } else {
+    try {
+      const res = await axios.get(`https://apiv2.bitcoinaverage.com/indices/global/ticker/${SYM}USD`);
 
-    if (!cachedPrice) {
-      cache.set(priceKey, price);
+      const percentage = parseInt(res.data.changes.percent[duration], 10);
+
+      cache.set(cacheKey, percentage, 'EX', PRICE_CACHE);
+
+      return [percentage, null];
+    } catch (error) {
+      return [null, error];
     }
-
-    return price;
-  });
-};
-
-Coin.prototype.getPrice = async function (ts) {
-  const { symbol } = this;
-
-  return await Coin.getPrice({ ts, symbol });
+  }
 };
 
 Coin.sync();

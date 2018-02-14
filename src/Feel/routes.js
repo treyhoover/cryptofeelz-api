@@ -23,27 +23,27 @@ module.exports = (app) => {
       const { symbol = "BTC", days: _days = "1" } = req.query;
       const days = Number(_days);
 
-      const { startDate, endDate } = getDateRange(days);
+      const duration = days === 1 ? "day" :
+        days === 7 ? "week" :
+        days === 30 ? "month" :
+        days === 90 ? "month_3" :
+        days === 180 ? "month_6" :
+        days === 365 ? "year" : "day";
 
-      const fetchHistorical = Coin.getPrice({ symbol, date: startDate });
-      const fetchCurrent = Coin.getPrice({ symbol, date: endDate });
+      let [percent, err] = await Coin.getPriceChange({ symbol, duration });
 
-      const [prevPrice, currentPrice] = await Promise.all([fetchHistorical, fetchCurrent]);
-
-      let percent = Math.round((currentPrice / prevPrice - 1) * 100);
+      if (err) return res.status(400).error(err);
 
       if (!Number.isInteger(percent) || percent === -0) {
         percent = 0;
       }
-
-      console.log("percent", percent);
 
       const emotion = percentToEmotion(percent);
       const gif = await Feel.fetchGif(emotion);
 
       const upOrDown = percent >= 0 ? "up" : "down";
       const amt = format.asPercent(Math.abs(percent));
-      const time = days === 1 ? "day" : `${days} ${pluralize("days", days)}`;
+      const time = days === 1 ? "day" : `${days} days`;
       const caption = `When ${symbol} is ${upOrDown} ${amt} in the past ${time}`;
 
       const [feel] = await Feel.findOrCreate({
@@ -83,11 +83,11 @@ module.exports = (app) => {
       if (!feel) return res.status(404).end();
 
       // if (ext === "gif") {
-        // const outputFilePath = await feel2Gif(feel);
+      // const outputFilePath = await feel2Gif(feel);
 
-        // res.sendFile(outputFilePath);
+      // res.sendFile(outputFilePath);
       // } else {
-        res.json(feel);
+      res.json(feel);
       // }
     } catch (e) {
       res.json({

@@ -9,17 +9,4 @@ module.exports = (app) => {
 
     res.json(json);
   });
-
-  // SHOW
-  app.get('/coin/:symbol', async (req, res) => {
-    const { symbol = "BTC" } = req.params;
-
-    const coin = await Coin.findOne({ where: { symbol } });
-    const price = await coin.getPrice();
-
-    res.json({
-      symbol: coin.symbol,
-      price,
-    });
-  });
 };
